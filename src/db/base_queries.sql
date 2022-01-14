@@ -1,0 +1,18 @@
+CREATE USER suraj SUPERUSER PASSWORD 'root';
+CREATE DATABASE payzer;
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE TABLE IF NOT EXISTS users (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    phone_no VARCHAR(20) UNIQUE NOT NULL,
+    country VARCHAR(20) NOT NULL,
+    otp VARCHAR(20) NOT NULL,
+    name VARCHAR(50) NOT NULL,
+    profile_picture TEXT NOT NULL,
+    credit NUMERIC(999, 9) DEFAULT 10000.00,
+    debit NUMERIC(999, 9) DEFAULT 0.00,
+    card_count INT DEFAULT 1,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT (now() AT TIME ZONE 'utc')
+);
+CREATE TABLE IF NOT EXISTS cards (
+
+);
