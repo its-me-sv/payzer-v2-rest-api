@@ -14,5 +14,5 @@ CREATE TABLE IF NOT EXISTS users (
     created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT (now() AT TIME ZONE 'utc')
 );
 CREATE TABLE IF NOT EXISTS cards (
-
+    
 );
