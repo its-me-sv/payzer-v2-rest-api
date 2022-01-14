@@ -62,3 +62,21 @@ END; $$ LANGUAGE 'plpgsql';
 CREATE OR REPLACE TRIGGER new_card_side_effect AFTER INSERT ON cards
 FOR EACH ROW
 EXECUTE PROCEDURE add_new_card_transaction();
+
+CREATE OR REPLACE FUNCTION update_after_transaction()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF new.sender_id = new.reciever_id THEN
+        RETURN NULL;
+    END IF;
+    UPDATE users SET debit = debit + new.amount WHERE id = new.sender_id;
+    UPDATE users SET credit = credit + (new.rate * new.amount) WHERE id = new.reciever_id;
+    UPDATE cards SET debit = debit + new.amount WHERE id = new.card_id;
+    UPDATE cards SET credit = credit + (new.rate * new.amount) 
+    WHERE user_id = new.reciever_id AND is_primary = TRUE;
+    RETURN NEW;
+END; $$ LANGUAGE 'plpgsql';
+
+CREATE OR REPLACE TRIGGER new_transaction_side_effect AFTER INSERT ON transactions
+FOR EACH ROW
+EXECUTE PROCEDURE update_after_transaction();
