@@ -80,3 +80,36 @@ END; $$ LANGUAGE 'plpgsql';
 CREATE OR REPLACE TRIGGER new_transaction_side_effect AFTER INSERT ON transactions
 FOR EACH ROW
 EXECUTE PROCEDURE update_after_transaction();
+
+CREATE OR REPLACE FUNCTION get_user_cards(uid uuid)
+RETURNS SETOF cards AS $$
+BEGIN
+    RETURN QUERY
+    SELECT * FROM cards WHERE cards.user_id = uid;
+END; $$ LANGUAGE 'plpgsql';
+
+CREATE OR REPLACE FUNCTION get_user_transactions(uid uuid)
+RETURNS SETOF transactions AS $$
+BEGIN
+    RETURN QUERY
+    SELECT * FROM transactions 
+    WHERE uid IN (transactions.sender_id, transactions.reciever_id);
+END; $$ LANGUAGE 'plpgsql';
+
+CREATE OR REPLACE FUNCTION get_card_transactions(cid uuid)
+RETURNS SETOF transactions AS $$
+DECLARE
+    card_holder UUID := (SELECT user_id FROM cards WHERE cards.id = cid);
+    p_card BOOLEAN := (SELECT is_primary FROM cards WHERE cards.id = cid);
+BEGIN
+    IF p_card = FALSE THEN
+        RETURN QUERY
+        SELECT * FROM transactions WHERE transactions.card_id = cid;
+    END IF;
+    RETURN QUERY
+    SELECT * FROM transactions WHERE transactions.card_id = cid
+    OR (
+        transactions.reciever_id = card_holder AND
+        transactions.sender_id != card_holder
+    );
+END; $$ LANGUAGE 'plpgsql';
