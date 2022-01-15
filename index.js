@@ -7,7 +7,10 @@ const morgan = require("morgan");
 
 // custom
 const morganConfig = require('./src/configs/morgan.config');
+const authRoute = require('./src/routes/auth.route');
 const usersRoute = require('./src/routes/users.route');
+const cardsRoute = require('./src/routes/cards.route');
+const transactionsRoute = require('./src/routes/transactions.route');
 
 const app = express();
 
@@ -15,7 +18,10 @@ app.use(cors());
 app.use(morgan(morganConfig));
 app.use(express.json());
 
+app.use("/auth", authRoute);
 app.use("/users", usersRoute);
+app.use("/cards", cardsRoute);
+app.use("/transactions", transactionsRoute);
 
 app.get('/validation', async (req, res) => {
     return res.status(200).json("validation route");
