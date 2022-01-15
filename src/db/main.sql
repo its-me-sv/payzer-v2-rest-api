@@ -113,3 +113,12 @@ BEGIN
         transactions.sender_id != card_holder
     );
 END; $$ LANGUAGE 'plpgsql';
+
+CREATE OR REPLACE FUNCTION get_transactions_between_users(id1 uuid, id2 uuid)
+RETURNS SETOF transactions AS $$
+BEGIN
+    RETURN QUERY
+    SELECT * FROM transactions WHERE 
+    (transactions.sender_id = id1 AND transactions.reciever_id = id2) OR
+    (transactions.sender_id = id2 AND transactions.reciever_id = id1);
+END; $$ LANGUAGE 'plpgsql';
