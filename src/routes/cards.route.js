@@ -16,4 +16,18 @@ router.post("/retrieve-all", async(req, res) => {
     }
 });
 
+router.post("/add-card", async (req, res) => {
+    const { user_id } = req.body;
+
+    const QUERY = `INSERT INTO cards(user_id, credit) VALUES($1, 5000.0)`;
+    const VALUE = [user_id];
+
+    try {
+        const result = await db.query(QUERY, VALUE);
+        return res.status(200).json(result);
+    } catch (err) {
+        return res.status(500).json(err);
+    }
+});
+
 module.exports = router;
