@@ -55,4 +55,21 @@ router.post("/retrieve", async (req, res) => {
     }
 });
 
+router.get("/search/:keyword", async (req, res) => {
+    const { keyword } = req.params;
+
+    const QUERY = `
+        SELECT id, phone_no, country, name, profile_picture FROM users WHERE 
+        LOWER(name) LIKE $1 OR phone_no LIKE $1;
+    `;
+    const VALUE = [`%${keyword.toLowerCase()}%`];
+
+    try {
+        const { rows } = await db.query(QUERY, VALUE);
+        return res.status(200).json(rows);
+    } catch (err) {
+        return res.status(500).json(err);
+    }
+});
+
 module.exports = router;
