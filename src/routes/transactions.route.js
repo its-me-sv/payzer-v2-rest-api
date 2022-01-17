@@ -43,4 +43,27 @@ router.post("/between-users", async (req, res) => {
     }
 });
 
+router.post("/send", async (req, res) => {
+    const { 
+        senderId, 
+        recieverId,
+        cardId,
+        amount,
+        rate
+    } = req.body;
+
+    const QUERY = `
+        INSERT INTO transactions(sender_id, reciever_id, card_id, amount, rate)
+        VALUES ($1, $2, $3, $4, $5);
+    `;
+    const VALUE = [senderId, recieverId, cardId, amount, rate];
+
+    try {
+        await db.query(QUERY, VALUE);
+        return res.status(200).json("Transaction successfull");
+    } catch (err) {
+        return res.status(500).json(err);
+    }
+});
+
 module.exports = router;
