@@ -29,4 +29,18 @@ router.post("/user", async (req, res) => {
     }
 });
 
+router.post("/between-users", async (req, res) => {
+    const { id1, id2 } = req.body;
+
+    const QUERY = `SELECT * FROM get_transactions_between_users($1, $2)`;
+    const VALUE = [id1, id2];
+
+    try {
+        const { rows } = await db.query(QUERY, VALUE);
+        return res.status(200).json(rows);
+    } catch (err) {
+        return res.status(500).json(err);
+    }
+});
+
 module.exports = router;
