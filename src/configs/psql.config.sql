@@ -106,12 +106,14 @@ BEGIN
         RETURN QUERY
         SELECT * FROM transactions WHERE transactions.card_id = cid;
     END IF;
-    RETURN QUERY
-    SELECT * FROM transactions WHERE transactions.card_id = cid
-    OR (
-        transactions.reciever_id = card_holder AND
-        transactions.sender_id != card_holder
-    );
+    IF p_card = TRUE THEN
+        RETURN QUERY
+        SELECT * FROM transactions WHERE transactions.card_id = cid
+        OR (
+            transactions.reciever_id = card_holder AND
+            transactions.sender_id != card_holder
+        );
+    END IF;
 END; $$ LANGUAGE 'plpgsql';
 
 CREATE OR REPLACE FUNCTION get_transactions_between_users(id1 uuid, id2 uuid)
