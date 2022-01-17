@@ -4,7 +4,9 @@ const db = require("../configs/postgres.config");
 
 const mapIdentifier = {
     user_id: "id",
-    phoneNo: "phone_no"
+    phoneNo: "phone_no",
+    profilePicture: "profile_picture",
+    name: "name"
 };
 
 router.post("/create", async (req, res) => {
@@ -67,6 +69,23 @@ router.get("/search/:keyword", async (req, res) => {
     try {
         const { rows } = await db.query(QUERY, VALUE);
         return res.status(200).json(rows);
+    } catch (err) {
+        return res.status(500).json(err);
+    }
+});
+
+router.put("/update/:id", async (req, res) => {
+    const identifierAndValue = Object.entries(req.body).map(
+        pair => [mapIdentifier[pair[0]], pair[1]]
+    );
+    const params = identifierAndValue.map((pair, i) => `${pair[0]} = $${i + 1}`);
+
+    const QUERY = `UPDATE users SET ${params.join(", ")} WHERE id = $${params.length+1};`;
+    const VALUE = [...identifierAndValue.map(val => val[1]), req.params.id];
+
+    try {
+        await db.query(QUERY, VALUE);
+        return res.status(200).send("Account updated");
     } catch (err) {
         return res.status(500).json(err);
     }
