@@ -30,4 +30,22 @@ router.post("/add-card", async (req, res) => {
     }
 });
 
+router.put("/add-amount", async (req, res) => {
+    const { user_id, card_id, amount } = req.body;
+
+    const QUERY1 = `UPDATE cards SET credit = credit + $1 WHERE id = $2`;
+    const VALUE1 = [amount, card_id];
+
+    const QUERY2 = `UPDATE users SET credit = credit + $1 WHERE id = $2`;
+    const VALUE2 = [amount, user_id];
+
+    try {
+        await db.query(QUERY1, VALUE1);
+        await db.query(QUERY2, VALUE2);
+        return res.status(200).json("Transaction successfull");
+    } catch (err) {
+        return res.status(500).json(err);
+    }
+});
+
 module.exports = router;
