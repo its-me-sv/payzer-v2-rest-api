@@ -7,6 +7,7 @@ const morgan = require("morgan");
 
 // custom
 const morganConfig = require('./src/configs/morgan.config');
+const { verifyUser } = require('./src/utils/jwt.utils');
 const authRoute = require('./src/routes/auth.route');
 const usersRoute = require('./src/routes/users.route');
 const cardsRoute = require('./src/routes/cards.route');
@@ -16,6 +17,7 @@ const app = express();
 
 app.use(cors());
 app.use(morgan(morganConfig));
+app.use(verifyUser);
 app.use(express.json());
 
 app.use("/auth", authRoute);
