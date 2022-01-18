@@ -52,10 +52,14 @@ const verifyUser = (req, res, next) => {
         return res.status(400).json("You are NOT Authenticated");
     
     const token = authHeader.split(" ")[1];
-    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-        if (err || !isUserLoggedIn(user.id))
+    jwt.verify(token, process.env.JWT_SECRET, async (err, user) => {
+        const { 
+            rows, 
+            rowCount
+        } = await db.query(`SELECT * FROM tokens WHERE user_id = $1`, [user.id]);
+        if (err || !isUserLoggedIn(user.id) || !rowCount || rows[0].token != token)
             return res.status(400).json("You are NOT Authorized");
-        req.user = user;
+        req.userId = user.id;
         return next();
     });
 };

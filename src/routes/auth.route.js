@@ -1,6 +1,10 @@
 const router = require("express").Router();
 const db = require('../configs/postgres.config');
-const { isUserLoggedIn, generateAccessToken } = require('../utils/jwt.utils');
+const { 
+    isUserLoggedIn, 
+    generateAccessToken,
+    generateRefreshToken
+} = require('../utils/jwt.utils');
 
 router.post("/verify", async (req, res) => {
     const { phoneNo } = req.body;
@@ -18,6 +22,18 @@ router.post("/verify", async (req, res) => {
             return res.status(400).json("Already logged in");
         const jwt_token = await generateAccessToken(user);
         return res.status(200).json({ user, jwt_token });
+    } catch (err) {
+        console.log(err);
+        return res.status(500).json(err);
+    }
+});
+
+router.post("/refresh", async (req, res) => {
+    try {
+        const jwt_token = await generateRefreshToken({ id: req.userId });
+        if (!jwt_token)
+            return res.status(400).json("Cannot refresh token");
+        return res.status(200).json({ jwt_token });
     } catch (err) {
         console.log(err);
         return res.status(500).json(err);
