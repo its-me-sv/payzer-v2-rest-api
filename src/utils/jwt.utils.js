@@ -9,17 +9,38 @@ const isUserLoggedIn = async userId => {
     return rowCount === 1;
 };
 
+const logInUser = async (userId, token) => {
+    const QUERY = `INSERT INTO tokens VALUES($1, $2);`;
+    const VALUE = [userId, token];
+
+    await db.query(QUERY, VALUE);
+};
+
+const removeUser = async userId => {
+    const QUERY = `DELETE FROM tokens WHERE user_id = $1`;
+    const VALUE = [userId];
+
+    await db.query(QUERY, VALUE);
+};
+
 const { ROUTE_1, ROUTE_2 } = process.env;
 const whitelist = [ROUTE_1, ROUTE_2];
 
 const generateAccessToken = user => {
     if (isUserLoggedIn(user.id)) return null;
-    return jwt.sign({ id: user.id }, process.env.JWT_SECRET);
+    
+    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET);
+    logInUser(user.id, token);
+    return token;
 };
 
 const generateRefreshToken = user => {
     if (!isUserLoggedIn(user.id)) return null;
-    return jwt.sign({ id: user.id }, process.env.JWT_SECRET);
+    removeUser(user.id);
+    
+    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET);
+    logInUser(user.id, token);
+    return token;
 };
 
 const verifyUser = (req, res, next) => {

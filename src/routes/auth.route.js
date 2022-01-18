@@ -1,5 +1,6 @@
 const router = require("express").Router();
 const db = require('../configs/postgres.config');
+const {} = require('../utils/jwt.utils');
 
 router.post("/verify", async (req, res) => {
     const { phoneNo } = req.body;
@@ -12,7 +13,7 @@ router.post("/verify", async (req, res) => {
         if (!rowCount)
             return res.status(200).json("No account");
         const { otp, ...user } = rows[0];
-        return res.status(200).json(user);
+        return res.status(200).json({ user });
     } catch (err) {
         console.log(err);
         return res.status(500).json(err);
