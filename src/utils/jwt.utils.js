@@ -26,20 +26,20 @@ const removeUser = async userId => {
 const { ROUTE_1, ROUTE_2 } = process.env;
 const whitelist = [ROUTE_1, ROUTE_2];
 
-const generateAccessToken = user => {
-    if (isUserLoggedIn(user.id)) return null;
+const generateAccessToken = async user => {
+    if (await isUserLoggedIn(user.id)) return null;
     
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET);
-    logInUser(user.id, token);
+    await logInUser(user.id, token);
     return token;
 };
 
-const generateRefreshToken = user => {
-    if (!isUserLoggedIn(user.id)) return null;
-    removeUser(user.id);
+const generateRefreshToken = async user => {
+    if (!(await isUserLoggedIn(user.id))) return null;
+    await removeUser(user.id);
     
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET);
-    logInUser(user.id, token);
+    await logInUser(user.id, token);
     return token;
 };
 
@@ -63,5 +63,6 @@ const verifyUser = (req, res, next) => {
 module.exports = {
     generateAccessToken,
     generateRefreshToken,
-    verifyUser
+    verifyUser,
+    isUserLoggedIn
 };
