@@ -31,6 +31,10 @@ CREATE TABLE IF NOT EXISTS transactions (
     rate NUMERIC(999, 9) DEFAULT 0.00,
     created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT (now() AT TIME ZONE 'utc')
 );
+CREATE TABLE IF NOT EXISTS tokens (
+    user_id UUID NOT NULL,
+    token TEXT NOT NULL
+);
 
 CREATE OR REPLACE FUNCTION add_primary_card()
 RETURNS TRIGGER AS $$
