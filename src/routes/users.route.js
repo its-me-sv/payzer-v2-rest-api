@@ -83,6 +83,9 @@ router.put("/update/:id", async (req, res) => {
     const QUERY = `UPDATE users SET ${params.join(", ")} WHERE id = $${params.length+1};`;
     const VALUE = [...identifierAndValue.map(val => val[1]), req.params.id];
 
+    if (req.params.id != req.userId)
+        return res.status(400).json("Request failed");
+
     try {
         await db.query(QUERY, VALUE);
         return res.status(200).send("Account updated");

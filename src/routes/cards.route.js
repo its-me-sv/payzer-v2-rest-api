@@ -39,6 +39,9 @@ router.put("/add-amount", async (req, res) => {
     const QUERY2 = `UPDATE users SET credit = credit + $1 WHERE id = $2`;
     const VALUE2 = [amount, user_id];
 
+    if (user_id != req.userId)
+        return res.status(400).json("Request failed");
+
     try {
         await db.query(QUERY1, VALUE1);
         await db.query(QUERY2, VALUE2);
