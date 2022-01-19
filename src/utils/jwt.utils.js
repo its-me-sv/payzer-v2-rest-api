@@ -23,8 +23,11 @@ const removeUser = async userId => {
     await db.query(QUERY, VALUE);
 };
 
-const { ROUTE_1, ROUTE_2 } = process.env;
-const whitelist = [ROUTE_1, ROUTE_2];
+const whitelist = [
+    '/users/create', 
+    '/auth/verify',
+    '/validation'
+];
 
 const generateAccessToken = async user => {
     if (await isUserLoggedIn(user.id)) return null;
