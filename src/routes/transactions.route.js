@@ -58,6 +58,9 @@ router.post("/send", async (req, res) => {
     `;
     const VALUE = [senderId, recieverId, cardId, amount, rate];
 
+    if (senderId != req.userId)
+        return res.status(400).json("Request failed");
+
     try {
         await db.query(QUERY, VALUE);
         return res.status(200).json("Transaction successfull");
