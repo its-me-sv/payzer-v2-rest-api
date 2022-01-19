@@ -1,6 +1,6 @@
-const { Pool } = require("pg");
+const { Client } = require("pg");
 
-const pool = new Pool({
+const client = new Client({
     user: process.env.USER,
     host: process.env.HOST,
     database: process.env.DATABASE,
@@ -8,7 +8,13 @@ const pool = new Pool({
     port: process.env.DB_PORT
 });
 
-module.exports = {
-    query: (text, params) => pool.query(text, params),
-    on: pool.on
-};
+client.query('LISTEN new_transaction_event');
+
+client.on("notification", async (data) => {
+    const payload = JSON.parse(data.payload);
+    console.log("new row added", payload);
+});
+
+client.connect();
+
+module.exports = client;

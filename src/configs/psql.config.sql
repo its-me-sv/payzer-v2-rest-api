@@ -85,6 +85,17 @@ CREATE OR REPLACE TRIGGER new_transaction_side_effect AFTER INSERT ON transactio
 FOR EACH ROW
 EXECUTE PROCEDURE update_after_transaction();
 
+CREATE OR REPLACE FUNCTION notify_new_transaction()
+RETURNS TRIGGER AS $$
+BEGIN
+    PERFORM pg_notify('new_transaction_event', row_to_json(NEW)::text);
+    RETURN NULL;
+END; $$ LANGUAGE 'plpgsql';
+
+CREATE OR REPLACE TRIGGER new_transaction_side_effect_1 AFTER INSERT ON transactions
+FOR EACH ROW
+EXECUTE PROCEDURE notify_new_transaction();
+
 CREATE OR REPLACE FUNCTION get_user_cards(uid uuid)
 RETURNS SETOF cards AS $$
 BEGIN
