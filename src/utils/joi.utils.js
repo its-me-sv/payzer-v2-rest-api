@@ -27,10 +27,27 @@ const UsersUpdateSchema = Joi.object({
     phoneNo: Joi.string().min(5)
 }).min(1);
 
+const CardsRetrieveAllSchema = Joi.object({
+    user_id: Joi.string().min(3).required()
+});
+
+const CardsAddCardSchema = Joi.object({
+    user_id: Joi.string().min(3).required()
+});
+
+const CardsAddAmountSchema = Joi.object({
+    user_id: Joi.string().min(3).required(),
+    card_id: Joi.string().min(3).required(),
+    amount: Joi.number().required()
+});
+
 module.exports = {
     AuthVerifySchema,
     UsersCreateSchema,
     UsersRetrieveSchema,
     UsersSearchSchema,
-    UsersUpdateSchema
+    UsersUpdateSchema,
+    CardsRetrieveAllSchema,
+    CardsAddCardSchema,
+    CardsAddAmountSchema
 };
