@@ -71,5 +71,6 @@ module.exports = {
     generateAccessToken,
     generateRefreshToken,
     verifyUser,
-    isUserLoggedIn
+    isUserLoggedIn,
+    removeUser
 };
