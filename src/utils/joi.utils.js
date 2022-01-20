@@ -41,6 +41,27 @@ const CardsAddAmountSchema = Joi.object({
     amount: Joi.number().required()
 });
 
+const TransactionsCardSchema = Joi.object({
+    card_id: Joi.string().min(3).required()
+});
+
+const TransactionsUserSchema = Joi.object({
+    user_id: Joi.string().min(3).required()
+});
+
+const TransactionsBetweenUsersSchema = Joi.object({
+    id1: Joi.string().min(3).required(),
+    id2: Joi.string().min(3).required()
+});
+
+const TransactionsSendSchema = Joi.object({
+    senderId: Joi.string().min(3).required(),
+    recieverId: Joi.string().min(3).required(),
+    cardId: Joi.string().min(3).required(),
+    amount: Joi.number().required(),
+    rate: Joi.number().required()
+});
+
 module.exports = {
     AuthVerifySchema,
     UsersCreateSchema,
@@ -49,5 +70,9 @@ module.exports = {
     UsersUpdateSchema,
     CardsRetrieveAllSchema,
     CardsAddCardSchema,
-    CardsAddAmountSchema
+    CardsAddAmountSchema,
+    TransactionsCardSchema,
+    TransactionsUserSchema,
+    TransactionsBetweenUsersSchema,
+    TransactionsSendSchema
 };
