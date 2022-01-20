@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const db = require('../utils/postgres.utils');
+const knex = require("../utils/knex.utils");
 const { 
     isUserLoggedIn, 
     generateAccessToken,
@@ -14,9 +14,8 @@ router.post("/verify", async (req, res) => {
     try {
         const bodyCheck = await AuthVerifySchema.validateAsync(req.body);
         const { phoneNo } = bodyCheck;
-        const QUERY = `SELECT * FROM users WHERE phone_no = $1`;
-        const VALUE = [phoneNo];
-        const { rowCount, rows } = await db.query(QUERY, VALUE);
+        const rows = await knex.select('*').from('users').where({ phone_no: phoneNo });
+        const rowCount = rows.length;
         if (!rowCount)
             return res.status(400).json("No account");
         const { otp, ...user } = rows[0];
