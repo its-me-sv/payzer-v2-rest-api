@@ -1,5 +1,4 @@
 const router = require("express").Router();
-const db = require('../utils/postgres.utils');
 const knex = require("../utils/knex.utils");
 const {
     CardsRetrieveAllSchema,
