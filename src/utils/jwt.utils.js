@@ -1,26 +1,20 @@
 const jwt = require("jsonwebtoken");
-const db = require("./postgres.utils");
+const knex = require("./knex.utils");
 
 const isUserLoggedIn = async userId => {
-    const QUERY = `SELECT * FROM tokens WHERE user_id = $1;`;
-    const VALUE = [userId];
-    
-    const { rowCount } = await db.query(QUERY, VALUE);
-    return rowCount === 1;
+    const data = await knex.select('user_id').from('tokens').where({ user_id: userId});
+    return data.length === 1;
 };
 
 const logInUser = async (userId, token) => {
-    const QUERY = `INSERT INTO tokens VALUES($1, $2);`;
-    const VALUE = [userId, token];
-
-    await db.query(QUERY, VALUE);
+    await knex('tokens').insert({
+        user_id: userId,
+        token
+    });
 };
 
 const removeUser = async userId => {
-    const QUERY = `DELETE FROM tokens WHERE user_id = $1`;
-    const VALUE = [userId];
-
-    await db.query(QUERY, VALUE);
+    await knex('tokens').where({ user_id: userId}).del();
 };
 
 const whitelist = [
@@ -57,10 +51,8 @@ const verifyUser = (req, res, next) => {
     
     const token = authHeader.split(" ")[1];
     jwt.verify(token, process.env.JWT_SECRET, async (err, user) => {
-        const { 
-            rows, 
-            rowCount
-        } = await db.query(`SELECT * FROM tokens WHERE user_id = $1`, [user.id]);
+        const rows = await knex.select('*').from('tokens').where({ user_id: user.id});
+        const rowCount = rows.length;
         if (err || !isUserLoggedIn(user.id) || !rowCount || rows[0].token != token)
             return res.status(400).json("You are NOT Authorized");
         req.userId = user.id;
