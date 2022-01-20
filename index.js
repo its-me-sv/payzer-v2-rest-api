@@ -29,7 +29,7 @@ app.get('/validation', async (req, res) => {
     return res.status(200).json("validation route");
 });
 
-const PORT = process.env.port || process.env.PORT || 5000;
+const PORT = process.env.port || process.env.PORT || process.env.Port || 5000;
 app.listen(PORT, async () => {
     console.clear();
     console.log(`[REST API] Listening to PORT ${PORT}`);
