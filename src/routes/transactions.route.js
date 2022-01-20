@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const db = require("../utils/postgres.utils");
+const knex = require("../utils/knex.utils");
 const {
     TransactionsCardSchema,
     TransactionsUserSchema,
@@ -12,10 +12,8 @@ router.post("/card", async (req, res) => {
         await TransactionsCardSchema.validateAsync(req.body);
         const { card_id } = req.body;
     
-        const QUERY = `SELECT * FROM get_card_transactions($1)`;
-        const VALUE = [card_id];
-    
-        const { rows } = await db.query(QUERY, VALUE);
+        const rows = await knex(knex.raw('get_card_transactions(?)', [card_id])).select('*');
+
         return res.status(200).json(rows);
     } catch(err) {
         return res.status((err.isJoi && 400) || 500).json(err);
@@ -29,11 +27,9 @@ router.post("/user", async (req, res) => {
 
         if (user_id != req.userId)
             return res.status(400).json("Request failed");
-    
-        const QUERY = `SELECT * FROM get_user_transactions($1)`;
-        const VALUE = [user_id];
-    
-        const { rows } = await db.query(QUERY, VALUE);
+
+        const rows = await knex(knex.raw('get_user_transactions(?)', [user_id])).select('*');
+        
         return res.status(200).json(rows);
     } catch (err) {
         return res.status((err.isJoi && 400) || 500).json(err);
@@ -48,10 +44,10 @@ router.post("/between-users", async (req, res) => {
         if (![id1, id2].includes(req.userId))
             return res.status(400).json("Request failed");
     
-        const QUERY = `SELECT * FROM get_transactions_between_users($1, $2)`;
-        const VALUE = [id1, id2];
-    
-        const { rows } = await db.query(QUERY, VALUE);
+        const rows = await knex(
+            knex.raw('get_transactions_between_users(?, ?)', [id1, id2])
+        ).select('*');
+        
         return res.status(200).json(rows);
     } catch (err) {
         return res.status((err.isJoi && 400) || 500).json(err);
@@ -69,16 +65,17 @@ router.post("/send", async (req, res) => {
             rate
         } = req.body;
     
-        const QUERY = `
-            INSERT INTO transactions(sender_id, reciever_id, card_id, amount, rate)
-            VALUES ($1, $2, $3, $4, $5);
-        `;
-        const VALUE = [senderId, recieverId, cardId, amount, rate];
-    
         if (senderId != req.userId)
             return res.status(400).json("Request failed");
-    
-        await db.query(QUERY, VALUE);
+
+        await knex('transactions').insert({
+            sender_id: senderId,
+            reciever_id: recieverId,
+            card_id: cardId,
+            amount,
+            rate
+        });
+
         return res.status(200).json("Transaction successfull");
     } catch (err) {
         return res.status((err.isJoi && 400) || 500).json(err);
