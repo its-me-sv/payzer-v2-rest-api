@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const db = require("../configs/postgres.config");
+const db = require("../utils/postgres.utils");
 
 router.post("/card", async (req, res) => {
     const { card_id } = req.body;

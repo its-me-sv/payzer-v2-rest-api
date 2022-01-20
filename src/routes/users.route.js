@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const bcrypt = require("bcrypt");
-const db = require("../configs/postgres.config");
+const db = require("../utils/postgres.utils");
 
 const mapIdentifier = {
     user_id: "id",

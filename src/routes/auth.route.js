@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const db = require('../configs/postgres.config');
+const db = require('../utils/postgres.utils');
 const { 
     isUserLoggedIn, 
     generateAccessToken,

@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const db = require("../configs/postgres.config");
+const db = require("./postgres.utils");
 
 const isUserLoggedIn = async userId => {
     const QUERY = `SELECT * FROM tokens WHERE user_id = $1;`;
