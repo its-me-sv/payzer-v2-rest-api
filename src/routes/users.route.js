@@ -1,6 +1,12 @@
 const router = require('express').Router();
 const bcrypt = require("bcrypt");
 const db = require("../utils/postgres.utils");
+const {
+    UsersCreateSchema,
+    UsersRetrieveSchema,
+    UsersSearchSchema,
+    UsersUpdateSchema
+} = require("../utils/joi.utils");
 
 const mapIdentifier = {
     user_id: "id",
@@ -11,11 +17,12 @@ const mapIdentifier = {
 
 router.post("/create", async (req, res) => {
     try {
+        await UsersCreateSchema.validateAsync(req.body);
         const salt = await bcrypt.genSalt(+process.env.SALT);
         req.body.otp = await bcrypt.hash(req.body.otp, salt);
     } catch (err) {
         console.log(err);
-        return res.status(500).json(err);
+        return res.status((err.isJoi && 400) || 500).json(err);
     }
     const {
         phoneNo,
@@ -41,56 +48,58 @@ router.post("/create", async (req, res) => {
 });
 
 router.post("/retrieve", async (req, res) => {
-    const { identifier, value } = req.body;
-    const column = mapIdentifier[identifier];
-    
-    const QUERY = `SELECT * FROM users WHERE ${column} = $1`;
-    const VALUE = [value];
-    
     try {
+        await UsersRetrieveSchema.validateAsync(req.body);
+        const { identifier, value } = req.body;
+        const column = mapIdentifier[identifier];
+        
+        const QUERY = `SELECT * FROM users WHERE ${column} = $1`;
+        const VALUE = [value];
         const { rows, rowCount } = await db.query(QUERY, VALUE);
         if (!rowCount) return res.status(400).json("No user");
         const { otp, ...user } = rows[0]
         return res.status(200).json(user);
     } catch (err) {
-        return res.status(500).json(err);
+        return res.status((err.isJoi && 400) || 500).json(err);
     }
 });
 
 router.get("/search/:keyword", async (req, res) => {
-    const { keyword } = req.params;
-
-    const QUERY = `
-        SELECT id, phone_no, country, name, profile_picture FROM users WHERE 
-        LOWER(name) LIKE $1 OR phone_no LIKE $1;
-    `;
-    const VALUE = [`%${keyword.toLowerCase()}%`];
-
     try {
+        await UsersSearchSchema.validateAsync(req.params);
+        const { keyword } = req.params;
+    
+        const QUERY = `
+            SELECT id, phone_no, country, name, profile_picture FROM users WHERE 
+            LOWER(name) LIKE $1 OR phone_no LIKE $1;
+        `;
+        const VALUE = [`%${keyword.toLowerCase()}%`];
+        
         const { rows } = await db.query(QUERY, VALUE);
         return res.status(200).json(rows);
     } catch (err) {
-        return res.status(500).json(err);
+        return res.status((err.isJoi && 400) || 500).json(err);
     }
 });
 
 router.put("/update/:id", async (req, res) => {
-    const identifierAndValue = Object.entries(req.body).map(
-        pair => [mapIdentifier[pair[0]], pair[1]]
-    );
-    const params = identifierAndValue.map((pair, i) => `${pair[0]} = $${i + 1}`);
-
-    const QUERY = `UPDATE users SET ${params.join(", ")} WHERE id = $${params.length+1};`;
-    const VALUE = [...identifierAndValue.map(val => val[1]), req.params.id];
-
     if (req.params.id != req.userId)
         return res.status(400).json("Request failed");
-
+    
     try {
+        await UsersUpdateSchema.validateAsync(req.body);
+        const identifierAndValue = Object.entries(req.body).map(
+            pair => [mapIdentifier[pair[0]], pair[1]]
+        );
+        const params = identifierAndValue.map((pair, i) => `${pair[0]} = $${i + 1}`);
+    
+        const QUERY = `UPDATE users SET ${params.join(", ")} WHERE id = $${params.length+1};`;
+        const VALUE = [...identifierAndValue.map(val => val[1]), req.params.id];
+        
         await db.query(QUERY, VALUE);
         return res.status(200).send("Account updated");
     } catch (err) {
-        return res.status(500).json(err);
+        return res.status((err.isJoi && 400) || 500).json(err);
     }
 });
 
