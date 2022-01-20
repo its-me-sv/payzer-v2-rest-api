@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const bcrypt = require("bcrypt");
-const db = require("../utils/postgres.utils");
+const knex = require("../utils/knex.utils");
 const {
     UsersCreateSchema,
     UsersRetrieveSchema,
@@ -32,16 +32,18 @@ router.post("/create", async (req, res) => {
         profilePicture
     } = req.body;
 
-    const QUERY = `
-        INSERT INTO users(phone_no, country, otp, name, profile_picture)
-        VALUES($1, $2, $3, $4, $5);
-    `;
-    const VALUE = [phoneNo, country, otp, name, profilePicture];
-
     try {
-        const result = await db.query(QUERY, VALUE);
-        return res.status(200).json(result);
+        const result = await knex("users").insert({
+            phone_no: phoneNo,
+            country,
+            otp,
+            name,
+            profile_picture: profilePicture
+        }).returning('*');
+        const { otp: nq, ...userData } = result[0];
+        return res.status(200).json(userData);
     } catch (err) {
+        console.log(err);
         return res.status(500).json((err.detail && {error: err.detail}) || {error: true});
     }
 
@@ -53,9 +55,9 @@ router.post("/retrieve", async (req, res) => {
         const { identifier, value } = req.body;
         const column = mapIdentifier[identifier];
         
-        const QUERY = `SELECT * FROM users WHERE ${column} = $1`;
-        const VALUE = [value];
-        const { rows, rowCount } = await db.query(QUERY, VALUE);
+        const rows = await knex.select('*').from('users').where({ [column]: value});
+        const rowCount = rows.length;
+        
         if (!rowCount) return res.status(400).json("No user");
         const { otp, ...user } = rows[0]
         return res.status(200).json(user);
@@ -69,13 +71,10 @@ router.get("/search/:keyword", async (req, res) => {
         await UsersSearchSchema.validateAsync(req.params);
         const { keyword } = req.params;
     
-        const QUERY = `
-            SELECT id, phone_no, country, name, profile_picture FROM users WHERE 
-            LOWER(name) LIKE $1 OR phone_no LIKE $1;
-        `;
-        const VALUE = [`%${keyword.toLowerCase()}%`];
+        const rows = await knex.select().from('users')
+            .where('name', 'ILIKE', `%${keyword.toLowerCase()}%`)
+            .orWhere('phone_no', 'ILIKE', `%${keyword.toLowerCase()}%`);
         
-        const { rows } = await db.query(QUERY, VALUE);
         return res.status(200).json(rows);
     } catch (err) {
         return res.status((err.isJoi && 400) || 500).json(err);
@@ -85,18 +84,15 @@ router.get("/search/:keyword", async (req, res) => {
 router.put("/update/:id", async (req, res) => {
     if (req.params.id != req.userId)
         return res.status(400).json("Request failed");
-    
     try {
         await UsersUpdateSchema.validateAsync(req.body);
         const identifierAndValue = Object.entries(req.body).map(
             pair => [mapIdentifier[pair[0]], pair[1]]
         );
-        const params = identifierAndValue.map((pair, i) => `${pair[0]} = $${i + 1}`);
-    
-        const QUERY = `UPDATE users SET ${params.join(", ")} WHERE id = $${params.length+1};`;
-        const VALUE = [...identifierAndValue.map(val => val[1]), req.params.id];
-        
-        await db.query(QUERY, VALUE);
+        const params = {};
+        for (let val of identifierAndValue)
+            params[val[0]] = val[1];
+        await knex("users").where({ id: req.params.id}).update(params);
         return res.status(200).send("Account updated");
     } catch (err) {
         return res.status((err.isJoi && 400) || 500).json(err);
