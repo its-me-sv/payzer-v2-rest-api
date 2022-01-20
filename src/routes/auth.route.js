@@ -6,14 +6,16 @@ const {
     generateRefreshToken,
     removeUser
 } = require('../utils/jwt.utils');
+const {
+    AuthVerifySchema
+} = require("../utils/joi.utils");
 
 router.post("/verify", async (req, res) => {
-    const { phoneNo } = req.body;
-    
-    const QUERY = `SELECT * FROM users WHERE phone_no = $1`;
-    const VALUE = [phoneNo];
-
     try {
+        const bodyCheck = await AuthVerifySchema.validateAsync(req.body);
+        const { phoneNo } = bodyCheck;
+        const QUERY = `SELECT * FROM users WHERE phone_no = $1`;
+        const VALUE = [phoneNo];
         const { rowCount, rows } = await db.query(QUERY, VALUE);
         if (!rowCount)
             return res.status(400).json("No account");
@@ -24,8 +26,7 @@ router.post("/verify", async (req, res) => {
         const jwt_token = await generateAccessToken(user);
         return res.status(200).json({ user, jwt_token });
     } catch (err) {
-        console.log(err);
-        return res.status(500).json(err);
+        return res.status((err.isJoi && 400) || 500).json(err);
     }
 });
 
