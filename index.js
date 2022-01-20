@@ -8,6 +8,7 @@ const morgan = require("morgan");
 // custom
 const morganConfig = require('./src/configs/morgan.config');
 const { verifyUser } = require('./src/utils/jwt.utils');
+const validationRoute = require('./src/routes/validation.route');
 const authRoute = require('./src/routes/auth.route');
 const usersRoute = require('./src/routes/users.route');
 const cardsRoute = require('./src/routes/cards.route');
@@ -20,14 +21,11 @@ app.use(morgan(morganConfig));
 app.use(verifyUser);
 app.use(express.json());
 
+app.use("/validation", validationRoute);
 app.use("/auth", authRoute);
 app.use("/users", usersRoute);
 app.use("/cards", cardsRoute);
 app.use("/transactions", transactionsRoute);
-
-app.get('/validation', async (req, res) => {
-    return res.status(200).json("validation route");
-});
 
 const PORT = process.env.port || process.env.PORT || process.env.Port || 5000;
 app.listen(PORT, async () => {

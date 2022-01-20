@@ -26,7 +26,8 @@ const removeUser = async userId => {
 const whitelist = [
     '/users/create', 
     '/auth/verify',
-    '/validation'
+    '/validation/api',
+    '/validation/db'
 ];
 
 const generateAccessToken = async user => {
