@@ -2,7 +2,6 @@ require("dotenv").config();
 
 // packages
 const express = require("express");
-const cors = require("cors");
 const morgan = require("morgan");
 const rateLimiter = require("express-rate-limit");
 
@@ -18,7 +17,6 @@ const transactionsRoute = require('./src/routes/transactions.route');
 
 const app = express();
 
-app.use(cors());
 app.use(morgan(morganConfig));
 app.use(rateLimiter(rateLimitConfig));
 app.use(verifyUser);
