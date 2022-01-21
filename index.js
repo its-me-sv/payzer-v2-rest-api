@@ -4,9 +4,11 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const morgan = require("morgan");
+const rateLimiter = require("express-rate-limit");
 
 // custom
 const morganConfig = require('./src/configs/morgan.config');
+const rateLimitConfig = require('./src/configs/rate-limit.config');
 const { verifyUser } = require('./src/utils/jwt.utils');
 const validationRoute = require('./src/routes/validation.route');
 const authRoute = require('./src/routes/auth.route');
@@ -18,6 +20,7 @@ const app = express();
 
 app.use(cors());
 app.use(morgan(morganConfig));
+app.use(rateLimiter(rateLimitConfig));
 app.use(verifyUser);
 app.use(express.json());
 
