@@ -14,7 +14,12 @@ combineMiddlewares(app, express.json());
 combineRoutes(app);
 
 const PORT = process.env.port || process.env.PORT || process.env.Port || 5000;
-app.listen(PORT, async () => {
+const server = app.listen(PORT, async () => {
     console.clear();
     console.log(`[REST API] Listening to PORT ${PORT}`);
+});
+
+process.on("uncaughtException", err => {
+    server.close();
+    console.log(`[REST API] App crashed due to ${err.message}`);
 });
