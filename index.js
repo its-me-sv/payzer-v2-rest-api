@@ -19,7 +19,8 @@ const server = app.listen(PORT, async () => {
     console.log(`[REST API] Listening to PORT ${PORT}`);
 });
 
-process.on("uncaughtException", err => {
+process.on("uncaughtException", async err => {
     server.close();
     console.log(`[REST API] App crashed due to ${err.message}`);
+    process.exit(1);
 });
