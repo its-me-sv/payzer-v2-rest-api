@@ -8,7 +8,8 @@ const helmet = require("helmet");
 // custom
 const morganConfig = require('./src/configs/morgan.config');
 const {
-    serverRateLimiter
+    serverRateLimiter,
+    tokenRateLimiter
 } = require('./src/utils/rate-limiting.utils');
 const { verifyUser } = require('./src/utils/jwt.utils');
 const validationRoute = require('./src/routes/validation.route');
@@ -20,8 +21,9 @@ const transactionsRoute = require('./src/routes/transactions.route');
 const app = express();
 
 app.use(helmet());
-app.use(serverRateLimiter);
 app.use(verifyUser);
+app.use(tokenRateLimiter);
+app.use(serverRateLimiter);
 app.use(morgan(morganConfig));
 app.use(express.json());
 
