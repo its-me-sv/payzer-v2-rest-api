@@ -4,6 +4,7 @@ require("dotenv").config();
 const express = require("express");
 const morgan = require("morgan");
 const rateLimiter = require("express-rate-limit");
+const helmet = require("helmet");
 
 // custom
 const morganConfig = require('./src/configs/morgan.config');
@@ -17,9 +18,10 @@ const transactionsRoute = require('./src/routes/transactions.route');
 
 const app = express();
 
-app.use(morgan(morganConfig));
+app.use(helmet());
 app.use(rateLimiter(rateLimitConfig));
 app.use(verifyUser);
+app.use(morgan(morganConfig));
 app.use(express.json());
 
 app.use("/validation", validationRoute);
