@@ -16,6 +16,8 @@ const serverRateLimiter = rateLimitter({
 const whitelist = [
     '/users/create',
     '/auth/verify',
+    '/auth/send-otp',
+    '/auth/check-otp',
     '/validation/api',
     '/validation/db'
 ];

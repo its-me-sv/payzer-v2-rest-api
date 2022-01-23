@@ -7,8 +7,13 @@ const {
     removeUser
 } = require('../utils/jwt.utils');
 const {
-    AuthVerifySchema
+    AuthVerifySchema,
+    AuthOtpSchema
 } = require("../utils/joi.utils");
+const {
+    sendVerificationCode,
+    checkVerificationCode
+} = require("../utils/sms-service.utils");
 
 router.post("/verify", async (req, res) => {
     try {
@@ -52,6 +57,30 @@ router.delete("/logout", async (req, res) => {
     } catch (err) {
         console.log(err);
         return res.status(500).json(err);
+    }
+});
+
+router.post("/send-otp", async (req, res) => {
+    try {
+        const bodyCheck = await AuthVerifySchema.validateAsync(req.body);
+        const { phoneNo } = bodyCheck;
+        await sendVerificationCode(phoneNo);
+        return res.status(200).json("Verification code has been sent");
+    } catch (err) {
+        return res.status((err.isJoi && 400) || 500).json(err);
+    }
+});
+
+router.post("/check-otp", async (req, res) => {
+    try {
+        const bodyCheck = await AuthOtpSchema.validateAsync(req.body);
+        const { phoneNo, otp } = bodyCheck;
+        const status = await checkVerificationCode(phoneNo, otp);
+        if (status != 'approved')
+            return res.status(400).json("Not Verified");
+        return res.status(200).json({otp});
+    } catch (err) {
+        return res.status((err.isJoi && 400) || 500).json(err);
     }
 });
 
