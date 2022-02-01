@@ -64,7 +64,10 @@ router.post("/send-otp", async (req, res) => {
     try {
         const bodyCheck = await AuthVerifySchema.validateAsync(req.body);
         const { phoneNo } = bodyCheck;
-        await sendVerificationCode(phoneNo);
+        if (!process.env.NODE_ENV.includes('dev'))
+            await sendVerificationCode(phoneNo);
+        else
+            console.log(phoneNo);
         return res.status(200).json("Verification code has been sent");
     } catch (err) {
         return res.status((err.isJoi && 400) || 500).json(err);
@@ -75,9 +78,13 @@ router.post("/check-otp", async (req, res) => {
     try {
         const bodyCheck = await AuthOtpSchema.validateAsync(req.body);
         const { phoneNo, otp } = bodyCheck;
-        const status = await checkVerificationCode(phoneNo, otp);
-        if (status != 'approved')
-            return res.status(400).json("Not Verified");
+        if (!process.env.NODE_ENV.includes('dev')) {
+            const status = await checkVerificationCode(phoneNo, otp);
+            if (status != 'approved')
+                return res.status(400).json("Not Verified");
+        } else {
+            console.log(phoneNo, otp);
+        }
         return res.status(200).json({otp});
     } catch (err) {
         return res.status((err.isJoi && 400) || 500).json(err);
